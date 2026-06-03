@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Black & Gold Liquid Glass Theme */
+        body {
+            background-color: #050505; /* Deep Black */
+            min-height: 100vh;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-bottom: 2rem;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        /* Liquid ambient light blobs */
+        .ambient-blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: -1;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .blob-1 { top: -10%; left: -5%; width: 40vw; height: 40vw; background: rgba(212, 175, 55, 0.15); }
+        .blob-2 { bottom: -20%; right: -10%; width: 50vw; height: 50vw; background: rgba(212, 175, 55, 0.1); }
+
+        /* Core Glass Panel */
+        .glass-card {
+            background: rgba(20, 20, 20, 0.55);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 20px;
+            border: 1px solid rgba(212, 175, 55, 0.25); /* Gold border */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.7);
+            color: #fff;
+        }
+
+        /* Golden Text & Accents */
+        .text-gold { color: #D4AF37 !important; }
+        .border-gold { border-color: rgba(212, 175, 55, 0.3) !important; }
+
+        /* Central Circular Button */
+        .btn-gold-circle {
+            width: 80px;
+            height: 80px;
+            font-size: 40px;
+            font-weight: 300;
+            line-height: 1;
+            background: linear-gradient(135deg, #F3E5AB 0%, #D4AF37 50%, #996515 100%);
+            color: #000;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.4);
+            margin: 0 auto;
+        }
+        .btn-gold-circle:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 10px 35px rgba(212, 175, 55, 0.6);
+            color: #000;
+        }
+
+        /* Glass Table */
+        .glass-table { color: #e0e0e0; }
+        .glass-table th, .glass-table td { 
+            background: transparent !important; 
+            color: #e0e0e0; 
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15); 
+        }
+        .glass-table th { font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; color: #D4AF37; }
+        
+        /* Modal Styling */
+        .modal-content.glass-card { background: rgba(15, 15, 15, 0.9); }
+        .modal-header { border-bottom: 1px solid rgba(212, 175, 55, 0.2); }
+        .modal-footer { border-top: 1px solid rgba(212, 175, 55, 0.2); }
+        .form-control, .form-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            color: #fff;
+        }
+        .form-control:focus, .form-select:focus {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+            border-color: #D4AF37;
+        }
+        .form-control::placeholder { color: rgba(255, 255, 255, 0.4); }
+        
+        /* Fix for invisible select dropdown options */
+        .form-select option {
+            background-color: #151515; /* Dark background to match the theme */
+            color: #e0e0e0;            /* Light gray/white text */
+        }
+
+        /* Optional: Make the hovered option look slightly golden (works on some modern browsers) */
+        .form-select option:checked, 
+        .form-select option:hover {
+            background-color: #D4AF37 !important;
+            color: #000 !important;
+        }
+        
+        /* Glass Navbar */
+        .glass-nav {
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        .nav-link { color: #e0e0e0 !important; }
+        .nav-link:hover { color: #D4AF37 !important; }
+    </style>
+</head>
+<body>
+
+<div class="ambient-blob blob-1"></div>
+<div class="ambient-blob blob-2"></div>
+
+<nav class="navbar navbar-expand-lg glass-nav mb-4">
+    <div class="container">
+        <a class="navbar-brand fw-bold text-gold" href="/">Expense Tracker</a>
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link" href="/">Dashboard</a>
+            <a class="nav-link" href="/all-expenses">All Expenses</a>
+        </div>
+    </div>
+</nav>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endwith %}
+<div class="container">
+    {% block content %}{% endblock %}
+</div>
+
+<div class="modal fade" id="expenseModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content glass-card">
+            <div class="modal-header">
+                <h5 class="modal-title text-gold">{% if edit_expense %}Edit Expense{% else %}Add Expense{% endif %}</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{% if edit_expense %}/expenses/update/{{ edit_expense.id }}{% else %}/expenses{% endif %}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label text-gold small text-uppercase">Title</label>
+                        <input type="text" name="title" class="form-control" required value="{{ edit_expense.title if edit_expense else '' }}">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-gold small text-uppercase">Amount (₹)</label>
+                            <input type="number" name="amount" class="form-control" step="0.01" required value="{{ edit_expense.amount if edit_expense else '' }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-gold small text-uppercase">Date</label>
+                            <input type="date" name="expense_date" class="form-control" required value="{{ edit_expense.expense_date if edit_expense else today }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-gold small text-uppercase">Category</label>
+                        <select name="category" class="form-select" required>
+                            {% for cat in categories %}
+                            <option value="{{ cat }}" {% if edit_expense and edit_expense.category == cat %}selected{% endif %}>{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-gold small text-uppercase">Note</label>
+                        <textarea name="note" class="form-control" rows="2">{{ edit_expense.note if edit_expense else '' }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer border-gold">
+                    <a href="/" class="btn btn-outline-secondary text-white" {% if not edit_expense %}data-bs-dismiss="modal"{% endif %}>Cancel</a>
+                    <button type="submit" class="btn text-dark fw-bold" style="background-color: #D4AF37;">Save Expense</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    {% if edit_expense %}
+    document.addEventListener("DOMContentLoaded", function() {
+        var myModal = new bootstrap.Modal(document.getElementById('expenseModal'));
+        myModal.show();
+    });
+    {% endif %}
+</script>
+</body>
+</html>

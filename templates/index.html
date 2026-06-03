@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+</head>
+<body>
+
+    <h1>Expense Tracker</h1>
+
+    <h2>
+        {% if edit_expense %}
+            Edit Expense
+        {% else %}
+            Add Expense
+        {% endif %}
+    </h2>
+
+    <form
+        action="{% if edit_expense %}/expenses/update/{{ edit_expense.id }}{% else %}/expenses{% endif %}"
+        method="POST"
+    >
+
+        <div>
+            <label>Title</label><br>
+            <input
+                type="text"
+                name="title"
+                value="{{ edit_expense.title if edit_expense else '' }}"
+                required
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label>Amount</label><br>
+            <input
+                type="number"
+                name="amount"
+                step="0.01"
+                min="0.01"
+                value="{{ edit_expense.amount if edit_expense else '' }}"
+                required
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label>Category</label><br>
+            <select name="category" required>
+
+                {% for category in categories %}
+                <option
+                    value="{{ category }}"
+                    {% if edit_expense and edit_expense.category == category %}
+                    selected
+                    {% endif %}
+                >
+                    {{ category }}
+                </option>
+                {% endfor %}
+
+            </select>
+        </div>
+
+        <br>
+
+        <div>
+            <label>Date</label><br>
+            <input
+                type="date"
+                name="expense_date"
+                value="{{ edit_expense.expense_date if edit_expense else today }}"
+                required
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label>Note</label><br>
+            <textarea
+                name="note"
+                rows="4"
+                cols="40"
+            >{{ edit_expense.note if edit_expense else '' }}</textarea>
+        </div>
+
+        <br>
+
+        <button type="submit">
+            {% if edit_expense %}
+                Update Expense
+            {% else %}
+                Save Expense
+            {% endif %}
+        </button>
+
+        {% if edit_expense %}
+        <a href="/">Cancel</a>
+        {% endif %}
+
+    </form>
+
+    <hr>
+    </form>
+
+<hr>
+
+<h2>Monthly Summary</h2>
+
+<p>
+    <strong>Total Spent This Month:</strong>
+    ₹{{ "%.2f"|format(monthly_total) }}
+</p>
+
+<h3>Category Breakdown</h3>
+
+{% if category_breakdown %}
+
+<table border="1" cellpadding="6">
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>Total Amount</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for item in category_breakdown %}
+        <tr>
+            <td>{{ item.category }}</td>
+            <td>₹{{ "%.2f"|format(item.total) }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% else %}
+
+<p>No expenses recorded this month.</p>
+
+{% endif %}
+
+<hr>
+
+<h2>Filters</h2>
+
+    <h2>Filters</h2>
+
+    <form method="GET">
+
+        <div>
+            <label>Category</label><br>
+
+            <select name="category">
+                <option value="">All Categories</option>
+
+                {% for category in categories %}
+                <option
+                    value="{{ category }}"
+                    {% if filters.category == category %}
+                    selected
+                    {% endif %}
+                >
+                    {{ category }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <br>
+
+        <div>
+            <label>Title Search</label><br>
+            <input
+                type="text"
+                name="title"
+                value="{{ filters.title }}"
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label>From Date</label><br>
+            <input
+                type="date"
+                name="date_from"
+                value="{{ filters.date_from }}"
+            >
+        </div>
+
+        <br>
+
+        <div>
+            <label>To Date</label><br>
+            <input
+                type="date"
+                name="date_to"
+                value="{{ filters.date_to }}"
+            >
+        </div>
+
+        <br>
+
+        <button type="submit">
+            Apply Filters
+        </button>
+
+        <a href="/">Clear Filters</a>
+
+    </form>
+
+    <hr>
+
+    <h2>Expenses</h2>
+
+    {% if expenses %}
+    <table border="1" cellpadding="8">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Title</th>
+                <th>Amount</th>
+                <th>Category</th>
+                <th>Note</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+
+        <tbody>
+
+            {% for expense in expenses %}
+            <tr>
+                <td>{{ expense.expense_date }}</td>
+                <td>{{ expense.title }}</td>
+                <td>₹{{ "%.2f"|format(expense.amount) }}</td>
+                <td>{{ expense.category }}</td>
+                <td>{{ expense.note }}</td>
+
+                <td>
+
+                    <a href="/expenses/edit/{{ expense.id }}">
+                        Edit
+                    </a>
+
+                    <form
+                        action="/expenses/delete/{{ expense.id }}"
+                        method="POST"
+                        style="display:inline;"
+                        onsubmit="return confirm('Delete this expense?');"
+                    >
+                        <button type="submit">
+                            Delete
+                        </button>
+                    </form>
+
+                </td>
+
+            </tr>
+            {% endfor %}
+
+        </tbody>
+    </table>
+
+    {% else %}
+    <p>No expenses found.</p>
+    {% endif %}
+
+</body>
+</html>

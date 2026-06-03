@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+    /* Scoped polish for dashboard cards */
+    .dashboard-panel {
+        background: rgba(18, 18, 18, 0.7);
+        border: 1px solid rgba(212, 175, 55, 0.15);
+        box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    }
+    
+    .gold-gradient-text {
+        background: linear-gradient(135deg, #F3E5AB 0%, #D4AF37 50%, #aa771c 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        text-shadow: 0px 4px 15px rgba(212, 175, 55, 0.2);
+    }
+
+    .month-badge {
+        background: rgba(212, 175, 55, 0.08);
+        border: 1px solid rgba(212, 175, 55, 0.25);
+        color: #D4AF37;
+        font-weight: 400;
+        letter-spacing: 0.5px;
+    }
+
+    .category-card {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(212, 175, 55, 0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .category-card:hover {
+        background: rgba(212, 175, 55, 0.05);
+        border-color: rgba(212, 175, 55, 0.3);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    }
+</style>
+
+<div class="row mb-5 mt-4">
+    <div class="col-12 text-center">
+        <p class="text-gold text-uppercase mb-3" style="letter-spacing: 2.5px; font-size: 0.8rem; opacity: 0.9;">Record Transaction</p>
+        <button class="btn btn-gold-circle rounded-circle" data-bs-toggle="modal" data-bs-target="#expenseModal">
+            +
+        </button>
+    </div>
+</div>
+
+<div class="row mb-4 align-items-stretch">
+    <div class="col-md-4 mb-4">
+        <div class="card glass-card dashboard-panel h-100 p-4 text-center d-flex flex-column justify-content-center align-items-center">
+            <h5 class="text-uppercase text-gold mb-3" style="letter-spacing: 1.5px; font-size: 0.85rem;">Total Spent</h5>
+            <h1 class="display-4 fw-bold mb-0 gold-gradient-text">₹{{ "%.2f"|format(monthly_total) }}</h1>
+            
+            <div class="mt-4 py-1 px-3 rounded-pill month-badge">
+                <span style="font-size: 0.85rem;">This Month</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8 mb-4">
+        <div class="card glass-card dashboard-panel h-100 p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3" style="border-color: rgba(212, 175, 55, 0.15) !important;">
+                <h5 class="mb-0 text-uppercase text-gold" style="letter-spacing: 1.5px; font-size: 0.85rem;">Category Breakdown For This Month</h5>
+            </div>
+            
+            {% if category_breakdown %}
+            <div class="row g-3">
+                {% for item in category_breakdown %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="p-3 rounded h-100 category-card d-flex flex-column justify-content-center">
+                        <div class="text-uppercase mb-2" style="color: #a0a0a0; letter-spacing: 1px; font-size: 0.7rem;">{{ item.category }}</div>
+                        <div class="fs-5 fw-bold text-gold">₹{{ "%.2f"|format(item.total) }}</div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="d-flex h-100 align-items-center justify-content-center">
+                <p style="opacity: 0.5; font-style: italic;">No expenses recorded this month.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="card glass-card dashboard-panel p-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h5 class="mb-0 text-uppercase text-gold" style="letter-spacing: 1.5px; font-size: 0.85rem;">Recent Expenses</h5>
+        <a href="/all-expenses" class="btn btn-sm text-dark fw-bold" style="background-color: #D4AF37; border-radius: 20px; padding: 0.3rem 1.2rem; transition: 0.2s;">View All ➔</a>
+    </div>
+
+    {% if recent_expenses %}
+    <div class="table-responsive">
+        <table class="table glass-table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th style="color: rgba(212, 175, 55, 0.7);">Date</th>
+                    <th style="color: rgba(212, 175, 55, 0.7);">Title</th>
+                    <th style="color: rgba(212, 175, 55, 0.7);">Category</th>
+                    <th class="text-end" style="color: rgba(212, 175, 55, 0.7);">Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in recent_expenses %}
+                <tr>
+                    <td style="color: #a0a0a0; font-size: 0.85rem;">{{ expense.expense_date }}</td>
+                    <td class="fw-bold" style="color: #e0e0e0;">{{ expense.title }}</td>
+                    <td>
+                        <span class="badge" style="background: rgba(212, 175, 55, 0.1); color: #D4AF37; border: 1px solid rgba(212, 175, 55, 0.25); font-weight: 500;">
+                            {{ expense.category }}
+                        </span>
+                    </td>
+                    <td class="text-end fw-bold fs-6 text-gold">₹{{ "%.2f"|format(expense.amount) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <p style="color: #a0a0a0;">No recent expenses found. Click the gold button above to add one!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

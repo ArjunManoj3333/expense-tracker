@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card glass-card p-4 mb-4">
+    <h5 class="mb-3 text-uppercase" style="letter-spacing: 1px;">Filter Expenses</h5>
+    <form method="GET" action="/all-expenses" class="row g-3">
+        <div class="col-md-3">
+            <label class="form-label small">Category</label>
+            <select name="category" class="form-select">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                <option value="{{ cat }}" {% if filters.category == cat %}selected{% endif %}>{{ cat }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label small">Search Title</label>
+            <input type="text" name="title" class="form-control" value="{{ filters.title }}">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small">From</label>
+            <input type="date" name="date_from" class="form-control" value="{{ filters.date_from }}">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label small">To</label>
+            <input type="date" name="date_to" class="form-control" value="{{ filters.date_to }}">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-light w-100 me-2">Filter</button>
+            <a href="/all-expenses" class="btn btn-outline-light">Clear</a>
+        </div>
+    </form>
+</div>
+
+<div class="card glass-card p-4">
+    <h5 class="mb-4 text-uppercase" style="letter-spacing: 1px;">All Expense History</h5>
+    {% if expenses %}
+    <div class="table-responsive">
+        <table class="table glass-table align-middle">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Note</th>
+                    <th>Amount</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in expenses %}
+                <tr>
+                    <td>{{ expense.expense_date }}</td>
+                    <td class="fw-bold">{{ expense.title }}</td>
+                    <td><span class="badge" style="background: rgba(255,255,255,0.2);">{{ expense.category }}</span></td>
+                    <td style="opacity: 0.8; font-size: 0.9rem;">{{ expense.note or '-' }}</td>
+                    <td class="fw-bold">₹{{ "%.2f"|format(expense.amount) }}</td>
+                    <td class="text-end">
+                        <a href="/expenses/edit/{{ expense.id }}" class="btn btn-sm btn-outline-light me-1">Edit</a>
+                        <form action="/expenses/delete/{{ expense.id }}" method="POST" style="display:inline;" onsubmit="return confirm('Delete this expense?');">
+                            <button type="submit" class="btn btn-sm btn-danger" style="background: rgba(220,53,69,0.7); border:none;">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="opacity: 0.7;">No expenses found matching your criteria.</p>
+    {% endif %}
+</div>
+{% endblock %}
